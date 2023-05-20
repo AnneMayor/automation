@@ -1,6 +1,6 @@
 """Automation Exception Module"""
 
-class UnknownTypeException():
+class UnknownTypeException(BaseException):
     """Initialize class UnknownTypeException"""
 
     def __init__(self, message):
