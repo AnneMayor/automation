@@ -6,6 +6,7 @@ import math
 import pandas as pd
 
 from exception.common_exception import UnknownTypeException
+from exception.common_exception import UnknownCompanyException
 
 
 CSV_FILE_PATTERN = r'.csv$'
@@ -14,6 +15,8 @@ WORD_FILTER = r'주식회사'
 TECH_SUPPORT_FILTER = r'기술지원'
 COMMENT_FILTER = r'msp|ta계약'
 SALES_INCENTIVE_FILTER = r'omm'
+ORACLE_COMPANY = 'oracle'
+AKAMAI_COMPANY = 'akamai'
 SALES_FIRM = '매출 거래처명'
 SALES_ISSUED_DATE = '매출 세금계산서 발행일자'
 PURCHASES_ISSUED_DATE = '매입 세금계산서 발행일자'
@@ -59,14 +62,25 @@ def read_csv(origin_file):
         new_data.append(header)
 
         for row in reader:
-            new_data.append(filter_data(row))
+            new_data.append(filter_data(row, origin_file))
 
     filtered_new_data = list(filter(lambda x: len(x) > 0, new_data))
 
     return filtered_new_data
 
-def filter_data(row):
+def filter_data(row, origin_file):
     """filter data following conditions"""
+
+    if re.findall(ORACLE_COMPANY, origin_file.lower()):
+        return filter_oracle_data(row)
+
+    if re.findall(AKAMAI_COMPANY, origin_file.lower()):
+        return filter_akamai_data(row)
+
+    raise UnknownCompanyException("Unknown Company Type")
+
+def filter_oracle_data(row):
+    """filter oracle data"""
 
     if all(not x for x in row):
         return []
@@ -82,6 +96,11 @@ def filter_data(row):
     if re.findall(SALES_INCENTIVE_FILTER, row[6].lower()):
         row[4] = '판매장려금'
         return row
+
+    return row
+
+def filter_akamai_data(row):
+    """filter akamai data"""
 
     return row
 
